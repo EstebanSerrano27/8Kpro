@@ -1,0 +1,5 @@
+D:\Documentos\Trabajo\8Kpro\8Kpro\obj\Debug\8Kpro.csproj.AssemblyReference.cache
+D:\Documentos\Trabajo\8Kpro\8Kpro\obj\Debug\_8Kpro.Form1.resources
+D:\Documentos\Trabajo\8Kpro\8Kpro\obj\Debug\_8Kpro.Properties.Resources.resources
+D:\Documentos\Trabajo\8Kpro\8Kpro\obj\Debug\8Kpro.csproj.GenerateResource.cache
+D:\Documentos\Trabajo\8Kpro\8Kpro\obj\Debug\8Kpro.csproj.CoreCompileInputs.cache
