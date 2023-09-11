@@ -3,3 +3,15 @@ D:\Documentos\Trabajo\8Kpro\8Kpro\obj\Debug\_8Kpro.Form1.resources
 D:\Documentos\Trabajo\8Kpro\8Kpro\obj\Debug\_8Kpro.Properties.Resources.resources
 D:\Documentos\Trabajo\8Kpro\8Kpro\obj\Debug\8Kpro.csproj.GenerateResource.cache
 D:\Documentos\Trabajo\8Kpro\8Kpro\obj\Debug\8Kpro.csproj.CoreCompileInputs.cache
+D:\Documentos\Proyectos\C#\8Kpro\8Kpro\obj\Debug\8Kpro.csproj.AssemblyReference.cache
+D:\Documentos\Proyectos\C#\8Kpro\8Kpro\obj\Debug\_8Kpro.Form1.resources
+D:\Documentos\Proyectos\C#\8Kpro\8Kpro\obj\Debug\_8Kpro.Properties.Resources.resources
+D:\Documentos\Proyectos\C#\8Kpro\8Kpro\obj\Debug\8Kpro.csproj.GenerateResource.cache
+D:\Documentos\Proyectos\C#\8Kpro\8Kpro\obj\Debug\8Kpro.csproj.CoreCompileInputs.cache
+D:\Documentos\Proyectos\C#\8Kpro\8Kpro\obj\Debug\8Kpro.exe
+D:\Documentos\Proyectos\C#\8Kpro\8Kpro\obj\Debug\8Kpro.pdb
+D:\Documentos\Proyectos\C#\8Kpro\8Kpro\bin\Debug\8Kpro.exe.config
+D:\Documentos\Proyectos\C#\8Kpro\8Kpro\bin\Debug\8Kpro.exe
+D:\Documentos\Proyectos\C#\8Kpro\8Kpro\bin\Debug\8Kpro.pdb
+D:\Documentos\Proyectos\C#\8Kpro\8Kpro\obj\Debug\Interop.DeckLinkAPI.dll
+D:\Documentos\Proyectos\C#\8Kpro\8Kpro\obj\Debug\8Kpro.csproj.ResolveComReference.cache
