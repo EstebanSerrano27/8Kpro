@@ -58,7 +58,7 @@ namespace _8Kpro
 
             // Configurar un temporizador para llamar a RenderD3DImage (Prueba)
             var timer = new System.Windows.Forms.Timer();
-            timer.Interval = 100; // Intervalo en milisegundos
+            timer.Interval = 100; // Milisegundos
             timer.Tick += RenderD3DImage;
             timer.Start();
         }
@@ -158,6 +158,25 @@ namespace _8Kpro
             }));
         }
 
+        private void UpdateComboInputConnections(DeckLinkDevice selectedDevice)
+        {
+            if (selectedDevice == null)
+                return;
+
+            List<StringObjectPair<_BMDVideoConnection>> inputConnections = kInputConnectionList.Where(pair => m_selectedDevice.AvailableInputConnections.HasFlag(pair.Value)).ToList();
+
+            // Enlazar la lista al ComboBox
+            comboBoxConnection.Invoke((Action)(() =>
+            {
+                comboBoxConnection.DataSource = inputConnections;
+                comboBoxConnection.DisplayMember = "Key";
+                comboBoxConnection.ValueMember = "Value";
+            }));
+
+            var currentInputConnection = new MTAFunc<_BMDVideoConnection>(() => selectedDevice.CurrentVideoInputConnection);
+            comboBoxConnection.SelectedItem = currentInputConnection.Value;
+        }
+
         struct DisplayModeEntry
         /// Used for putting the BMDDisplayMode value into the video format combo
         {
@@ -176,7 +195,6 @@ namespace _8Kpro
         private void UpdatePorts(DeckLinkDevice device)
         {
             vrCard++;
-            Console.WriteLine(device.DisplayName.ToString() + " " + vrCard);
 
             if (deckLinkPortDevices == null)
             {
@@ -205,11 +223,12 @@ namespace _8Kpro
         }
 
         // Esta función debe ser la principal
-        // Revisar como pasar el device name para ver a donde debe llegar
         private void startCapture(DeckLinkDevice deckLinkPortDevices)
         {
             m_selectedDevice = deckLinkPortDevices;
             bool applyDetectedInputMode = true;
+
+            UpdateComboInputConnections(deckLinkPortDevices);
             UpdateComboVideoModes(deckLinkPortDevices);
 
             _BMDDisplayMode displayMode = (_BMDDisplayMode)(comboBoxVideoFormat.Invoke((Func<object>)(() => comboBoxVideoFormat.SelectedValue)) ?? _BMDDisplayMode.bmdModeUnknown);

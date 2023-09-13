@@ -29,7 +29,7 @@ namespace _8Kpro
         /// </summary>
         private void InitializeComponent()
         {
-            this.comboBox2 = new System.Windows.Forms.ComboBox();
+            this.comboBoxConnection = new System.Windows.Forms.ComboBox();
             this.label2 = new System.Windows.Forms.Label();
             this.comboBoxVideoFormat = new System.Windows.Forms.ComboBox();
             this.label3 = new System.Windows.Forms.Label();
@@ -47,13 +47,13 @@ namespace _8Kpro
             ((System.ComponentModel.ISupportInitialize)(this.preview4)).BeginInit();
             this.SuspendLayout();
             // 
-            // comboBox2
+            // comboBoxConnection
             // 
-            this.comboBox2.FormattingEnabled = true;
-            this.comboBox2.Location = new System.Drawing.Point(106, 48);
-            this.comboBox2.Name = "comboBox2";
-            this.comboBox2.Size = new System.Drawing.Size(279, 21);
-            this.comboBox2.TabIndex = 3;
+            this.comboBoxConnection.FormattingEnabled = true;
+            this.comboBoxConnection.Location = new System.Drawing.Point(106, 48);
+            this.comboBoxConnection.Name = "comboBoxConnection";
+            this.comboBoxConnection.Size = new System.Drawing.Size(279, 21);
+            this.comboBoxConnection.TabIndex = 3;
             // 
             // label2
             // 
@@ -164,7 +164,7 @@ namespace _8Kpro
             this.Controls.Add(this.Port1);
             this.Controls.Add(this.comboBoxVideoFormat);
             this.Controls.Add(this.label3);
-            this.Controls.Add(this.comboBox2);
+            this.Controls.Add(this.comboBoxConnection);
             this.Controls.Add(this.label2);
             this.Name = "Form1";
             this.Text = "Form1";
@@ -179,7 +179,7 @@ namespace _8Kpro
         }
 
         #endregion
-        private System.Windows.Forms.ComboBox comboBox2;
+        private System.Windows.Forms.ComboBox comboBoxConnection;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.ComboBox comboBoxVideoFormat;
         private System.Windows.Forms.Label label3;
