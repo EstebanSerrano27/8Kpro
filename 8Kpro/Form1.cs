@@ -17,12 +17,14 @@ namespace _8Kpro
 {
     public partial class Form1 : Form
     {
+		const _BMD3DPreviewFormat kDefault3DPreviewFormat = _BMD3DPreviewFormat.bmd3DPreviewFormatTopBottom;
         private Thread m_deckLinkMainThread;
         private readonly EventWaitHandle m_applicationCloseWaitHandle;
 
         private DeckLinkDevice m_selectedDevice;
         private DeckLinkDeviceDiscovery m_deckLinkDeviceDiscovery;
         private ProfileCallback m_profileCallback;
+        private PreviewCallback m_previewCallback;
 
         private DeckLinkDevice[] deckLinkPortDevices;
 
@@ -53,6 +55,12 @@ namespace _8Kpro
         {
             InitializeComponent();
             m_applicationCloseWaitHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
+
+            // Configurar un temporizador para llamar a RenderD3DImage (Prueba)
+            var timer = new System.Windows.Forms.Timer();
+            timer.Interval = 100; // Intervalo en milisegundos
+            timer.Tick += RenderD3DImage;
+            timer.Start();
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -63,12 +71,18 @@ namespace _8Kpro
         
         private void DeckLinkMainThread()
         {
+            m_previewCallback = new PreviewCallback();
+            m_previewCallback.RenderFrame += RenderD3DImage;
+            m_previewCallback.PreviewHelper.Set3DPreviewFormat(kDefault3DPreviewFormat);
+
             m_deckLinkDeviceDiscovery = new DeckLinkDeviceDiscovery();
             m_deckLinkDeviceDiscovery.DeviceArrived += AddDevice;
             m_deckLinkDeviceDiscovery.DeviceRemoved += RemoveDevice;
             m_deckLinkDeviceDiscovery.Enable();
 
             m_applicationCloseWaitHandle.WaitOne();
+
+            m_previewCallback.RenderFrame -= RenderD3DImage;
 
             m_deckLinkDeviceDiscovery.Disable();
             m_deckLinkDeviceDiscovery.DeviceArrived -= AddDevice;
@@ -116,39 +130,32 @@ namespace _8Kpro
             public override string ToString() => Name;
         }
 
-        private void comboBox2_SelectedIndexChanged(object sender, EventArgs e)
+        private void UpdateComboVideoModes(DeckLinkDevice selectedDevice)
         {
-            if ((m_selectedDevice == null) || (comboBox2.SelectedIndex < 0))
-                return;
-
-            var videoInputConnection = (_BMDVideoConnection)comboBox2.SelectedValue;
-            new MTAAction(() => m_selectedDevice.CurrentVideoInputConnection = videoInputConnection);
-
-            UpdateComboVideoModes();
-        }
-
-        private void UpdateComboVideoModes()
-        {
-            if (m_selectedDevice == null)
+            if (selectedDevice == null)
                 return;
 
             List<DisplayModeEntry> displayModeEntries = new List<DisplayModeEntry>();
 
             new MTAAction(() =>
             {
-                foreach (IDeckLinkDisplayMode displayMode in m_selectedDevice.DisplayModes)
+                foreach (IDeckLinkDisplayMode displayMode in selectedDevice.DisplayModes)
                 {
                     displayModeEntries.Add(new DisplayModeEntry(displayMode));
                 }
             });
 
             // Bind display mode list to combo 
-            comboBoxVideoFormat.DataSource = displayModeEntries;
-            comboBoxVideoFormat.DisplayMember = "DisplayString";
-            comboBoxVideoFormat.ValueMember = "Value";
+            comboBoxVideoFormat.Invoke((Action)(() =>
+            {
+                // Bind display mode list to combo 
+                comboBoxVideoFormat.DataSource = displayModeEntries;
+                comboBoxVideoFormat.DisplayMember = "DisplayString";
+                comboBoxVideoFormat.ValueMember = "Value";
 
-            if (comboBoxVideoFormat.Items.Count > 0)
-                comboBoxVideoFormat.SelectedIndex = 0;
+                if (comboBoxVideoFormat.Items.Count > 0)
+                    comboBoxVideoFormat.SelectedIndex = 0;
+            }));
         }
 
         struct DisplayModeEntry
@@ -193,6 +200,44 @@ namespace _8Kpro
                 Port3.Text = deckLinkPortDevices[2].DisplayName.ToString();
                 Port4.Text = deckLinkPortDevices[3].DisplayName.ToString();
             }));
+
+            startCapture(deckLinkPortDevices[0]);
+        }
+
+        // Esta función debe ser la principal
+        // Revisar como pasar el device name para ver a donde debe llegar
+        private void startCapture(DeckLinkDevice deckLinkPortDevices)
+        {
+            m_selectedDevice = deckLinkPortDevices;
+            bool applyDetectedInputMode = true;
+            UpdateComboVideoModes(deckLinkPortDevices);
+
+            _BMDDisplayMode displayMode = (_BMDDisplayMode)(comboBoxVideoFormat.Invoke((Func<object>)(() => comboBoxVideoFormat.SelectedValue)) ?? _BMDDisplayMode.bmdModeUnknown);
+
+            if (displayMode != _BMDDisplayMode.bmdModeUnknown)
+                new MTAAction(() => m_selectedDevice.StartCapture(displayMode, m_previewCallback, applyDetectedInputMode));
+        }
+
+        public void RenderD3DImage(object sender, EventArgs e)
+        {
+            var actualWidth = preview1.Width;
+            var actualHeight = preview1.Height;
+
+            // Realiza las operaciones de representación aquí, adaptando el código original
+            // para trabajar con el PictureBox en lugar de D3DImage y WPF.
+            // Dibuja en un Bitmap y luego establecerlo como la imagen del PictureBox.
+            Bitmap bmp = new Bitmap(actualWidth, actualHeight);
+
+            // Simula alguna representación en el Bitmap bmp (reemplaza esto con tu lógica de representación).
+            using (var graphics = Graphics.FromImage(bmp))
+            {
+                graphics.Clear(Color.Black);
+                graphics.DrawString("Hello, Windows Forms!", new Font("Arial", 12), Brushes.White, new PointF(10, 10));
+                // Aquí puedes realizar tus operaciones de representación en lugar del código D3D.
+            }
+
+            // Establece el Bitmap como la imagen del PictureBox.
+            preview1.Image = bmp;
         }
     }
 }
