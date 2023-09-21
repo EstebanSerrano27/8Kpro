@@ -15,3 +15,9 @@ D:\Documentos\Proyectos\C#\8Kpro\8Kpro\bin\Debug\8Kpro.exe
 D:\Documentos\Proyectos\C#\8Kpro\8Kpro\bin\Debug\8Kpro.pdb
 D:\Documentos\Proyectos\C#\8Kpro\8Kpro\obj\Debug\Interop.DeckLinkAPI.dll
 D:\Documentos\Proyectos\C#\8Kpro\8Kpro\obj\Debug\8Kpro.csproj.ResolveComReference.cache
+D:\Documentos\Proyectos\C#\8Kpro\8Kpro\bin\Debug\SharpDX.Direct3D9.dll
+D:\Documentos\Proyectos\C#\8Kpro\8Kpro\bin\Debug\SharpDX.dll
+D:\Documentos\Proyectos\C#\8Kpro\8Kpro\bin\Debug\SharpDX.pdb
+D:\Documentos\Proyectos\C#\8Kpro\8Kpro\bin\Debug\SharpDX.Direct3D9.pdb
+D:\Documentos\Proyectos\C#\8Kpro\8Kpro\bin\Debug\SharpDX.Direct3D9.xml
+D:\Documentos\Proyectos\C#\8Kpro\8Kpro\obj\Debug\8Kpro.csproj.CopyComplete

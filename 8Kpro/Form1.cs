@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using SharpDX.Direct3D9;
 
 using DeckLinkAPI;
 using CapturePreviewCSharp;
@@ -30,7 +31,7 @@ namespace _8Kpro
 
         private int Infz = 8,
                     vrCard = 0;
-
+        
         private IReadOnlyList<StringObjectPair<_BMDVideoConnection>> kInputConnectionList = new List<StringObjectPair<_BMDVideoConnection>>
         {
             new StringObjectPair<_BMDVideoConnection>("SDI",            _BMDVideoConnection.bmdVideoConnectionSDI),
@@ -57,10 +58,10 @@ namespace _8Kpro
             m_applicationCloseWaitHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
 
             // Configurar un temporizador para llamar a RenderD3DImage (Prueba)
-            var timer = new System.Windows.Forms.Timer();
-            timer.Interval = 100; // Milisegundos
-            timer.Tick += RenderD3DImage;
-            timer.Start();
+            //var timer = new System.Windows.Forms.Timer();
+            //timer.Interval = 100; // Milisegundos
+            //timer.Tick += RenderD3DImage;
+            //timer.Start();
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -242,21 +243,39 @@ namespace _8Kpro
             var actualWidth = preview1.Width;
             var actualHeight = preview1.Height;
 
-            // Realiza las operaciones de representación aquí, adaptando el código original
-            // para trabajar con el PictureBox en lugar de D3DImage y WPF.
-            // Dibuja en un Bitmap y luego establecerlo como la imagen del PictureBox.
             Bitmap bmp = new Bitmap(actualWidth, actualHeight);
+            
+            IntPtr surface = IntPtr.Zero;
 
-            // Simula alguna representación en el Bitmap bmp (reemplaza esto con tu lógica de representación).
-            using (var graphics = Graphics.FromImage(bmp))
+            if(m_previewCallback != null)
             {
-                graphics.Clear(Color.Black);
-                graphics.DrawString("Hello, Windows Forms!", new Font("Arial", 12), Brushes.White, new PointF(10, 10));
-                // Aquí puedes realizar tus operaciones de representación en lugar del código D3D.
-            }
+                new MTAAction(() =>
+                {
+                    m_previewCallback.PreviewHelper.SetSurfaceSize((uint)actualWidth, (uint)actualHeight);
+                    m_previewCallback.PreviewHelper.GetBackBuffer(out surface);
+                });
 
-            // Establece el Bitmap como la imagen del PictureBox.
-            preview1.Image = bmp;
+                if (surface != IntPtr.Zero)
+                {
+                    using (var graphics = Graphics.FromImage(bmp))
+                    {
+                        this.Invoke((Action)(() =>
+                        {
+                            Device d3dDevice = new Device(new Direct3D(),
+                                                          0,
+                                                          DeviceType.Hardware,
+                                                          preview1.Handle,
+                                                          CreateFlags.HardwareVertexProcessing,
+                                                          new PresentParameters(preview1.Width, preview1.Height));
+                            Surface backBuffer = d3dDevice.GetBackBuffer(0, 0);
+
+                            new MTAAction(() => m_previewCallback.PreviewHelper.Render());
+
+                            d3dDevice.Present();
+                        }));
+                    }
+                }
+            }
         }
     }
 }
