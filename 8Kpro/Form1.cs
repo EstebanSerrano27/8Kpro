@@ -27,7 +27,7 @@ namespace _8Kpro
 
         // Variables de desarrollo
         private DeckLinkDeviceDiscovery m_deckLinkDeviceDiscovery; // Dispositivo encontrado
-        private DeckLinkDevice m_selectedDevice;                   // Dispositivo seleccionado
+        private DeckLinkDevice m_selectedDevice0;                  // Dispositivo seleccionado
 
         private ProfileCallback m_profileCallback;                 // Aun no se para que funciona esta variable
         private PreviewCallback m_previewCallback;
@@ -115,10 +115,26 @@ namespace _8Kpro
 
                 if (vrCard == Infz)
                 {
+                    m_selectedDevice0 = deckLinkPortDevices[0];     // Asigna el primer puerto de entrada
+
+                    if (m_selectedDevice0 != null)
+                    {
+                        m_selectedDevice0.InputFormatChanged -= DetectedVideoFormatChanged;
+                        m_selectedDevice0.VideoFrameArrived -= InputVideoFrameArrived;
+                    }
+
                     CardStartup(deckLinkPortDevices);
-                    UpdateVideoModes(deckLinkPortDevices[0]);
-                    UpdateInputConnections(deckLinkPortDevices[0]);
-                    startCapture(deckLinkPortDevices[0]);
+
+                    if (m_selectedDevice0 != null)
+                    {
+                        m_selectedDevice0.InputFormatChanged += DetectedVideoFormatChanged;
+                        m_selectedDevice0.VideoFrameArrived += InputVideoFrameArrived;
+                    }
+
+                    UpdateVideoModes(m_selectedDevice0);
+                    UpdateInputConnections(m_selectedDevice0);
+                    
+                    startCapture(m_selectedDevice0);
                 }
             }
             catch (DeckLinkInputInvalidException)
@@ -129,10 +145,10 @@ namespace _8Kpro
 
         public void RemoveDevice(object sender, DeckLinkDiscoveryEventArgs e)
         {
-            if (m_selectedDevice?.DeckLink == e.deckLink)
+            if (m_selectedDevice0?.DeckLink == e.deckLink)
             {
                 // stop capture and disable input
-                m_selectedDevice.StopCapture();
+                m_selectedDevice0.StopCapture();
             }            
         }
 
@@ -190,13 +206,9 @@ namespace _8Kpro
                     comboBoxConnection.ValueMember = "Value";
                 }));
             });
-
-            // Aqui hay que agregar 
-            // Averiguar por que selecciona el 0 cuando es otro tipo de entrada
-            //if (comboBoxDisplayModes.Items.Count > 0)
-            //    comboBoxDisplayModes.SelectedIndex = 0;
         }
 
+        // Actualiza y selecciona el tipo de entrada por la que esta recibiendo el video
         private void UpdateInputConnections(DeckLinkDevice selectedDevice)
         {
             if (selectedDevice == null)
@@ -210,8 +222,8 @@ namespace _8Kpro
                 comboBoxConnection.DisplayMember = "Name";
                 comboBoxConnection.ValueMember = "Value";
 
-                if (comboBoxConnection.Items.Count > 0)
-                    comboBoxConnection.SelectedIndex = 0;
+                var currentInputConnection = new MTAFunc<_BMDVideoConnection>(() => selectedDevice.CurrentVideoInputConnection);
+                comboBoxConnection.SelectedValue = currentInputConnection.Value;
             }));
         }
 
@@ -221,19 +233,39 @@ namespace _8Kpro
             if (selectedDevice == null)
                 return;
 
-            //bool applyDetectedInputMode = true; // Para pruebas va a ser siempre true
-
-
+            bool applyDetectedInputMode = true; // Para pruebas va a ser siempre true
 
             Invoke(new Action(() =>
             {
-                
-                //    _BMDDisplayMode displayMode = (_BMDDisplayMode)(comboBoxDisplayModes.SelectedValue?? _BMDDisplayMode.bmdModeUnknown);
+                _BMDDisplayMode displayMode = ((_8Kpro.Form1.DisplayModeEntry)comboBoxDisplayModes.SelectedItem).Value;
 
-                //    if (displayMode != _BMDDisplayMode.bmdModeUnknown)
-                //        new MTAAction(() => m_selectedDevice.StartCapture(displayMode, m_previewCallback, applyDetectedInputMode));
+                if (displayMode != _BMDDisplayMode.bmdModeUnknown)
+                    new MTAAction(() => m_selectedDevice0.StartCapture(displayMode, m_previewCallback, applyDetectedInputMode));
             }));
 
+        }
+
+        public void DetectedVideoFormatChanged(object sender, DeckLinkDeviceInputFormatEventArgs e)
+        {
+            UpdateUIElement(comboBoxDisplayModes, new Action(() => comboBoxDisplayModes.SelectedItem = e.displayMode.ToString()));
+        }
+
+        public void InputVideoFrameArrived(object sender, DeckLinkDeviceInputVideoFrameEventArgs e)
+        {
+            if (e.videoFrame.GetFlags().HasFlag(_BMDFrameFlags.bmdFrameHasNoInputSource))
+                return;
+        }
+
+        // Generada por chatgpt, debe someterse a pruebas
+        private static void UpdateUIElement(Control element, Action action)
+        {
+            if (element != null && !element.IsDisposed)
+            {
+                if (!element.InvokeRequired)
+                    element.Invoke(action);
+                else
+                    action();
+            }
         }
 
         // Cierra las instancias
