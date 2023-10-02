@@ -21,6 +21,8 @@ namespace _8Kpro
 {
     public partial class Form1 : Form
     {
+        const _BMD3DPreviewFormat kDefault3DPreviewFormat = _BMD3DPreviewFormat.bmd3DPreviewFormatTopBottom;
+
         private Thread m_deckLinkMainThread;
         private readonly IDeckLinkInput m_deckLinkInput;
         private readonly EventWaitHandle m_applicationCloseWaitHandle;
@@ -91,6 +93,10 @@ namespace _8Kpro
 
         private void DeckLinkMainThread()
         {
+            m_previewCallback = new PreviewCallback();
+            m_previewCallback.RenderFrame += RenderD3DImage;
+            m_previewCallback.PreviewHelper.Set3DPreviewFormat(kDefault3DPreviewFormat);
+
             m_deckLinkDeviceDiscovery = new DeckLinkDeviceDiscovery();
             m_deckLinkDeviceDiscovery.DeviceArrived += AddDevice;
             m_deckLinkDeviceDiscovery.DeviceRemoved += RemoveDevice;
@@ -247,7 +253,8 @@ namespace _8Kpro
 
         public void DetectedVideoFormatChanged(object sender, DeckLinkDeviceInputFormatEventArgs e)
         {
-            UpdateUIElement(comboBoxDisplayModes, new Action(() => comboBoxDisplayModes.SelectedItem = e.displayMode.ToString()));
+            Console.WriteLine(e.displayMode.ToString());
+            UpdateUIElement(comboBoxDisplayModes, new Action(() => comboBoxDisplayModes.SelectedItem = e.displayMode));
         }
 
         public void InputVideoFrameArrived(object sender, DeckLinkDeviceInputVideoFrameEventArgs e)
@@ -256,7 +263,6 @@ namespace _8Kpro
                 return;
         }
 
-        // Generada por chatgpt, debe someterse a pruebas
         private static void UpdateUIElement(Control element, Action action)
         {
             if (element != null && !element.IsDisposed)
@@ -266,6 +272,43 @@ namespace _8Kpro
                 else
                     action();
             }
+        }
+
+        public void RenderD3DImage(object sender, EventArgs e)
+        {
+            UpdateUIElement(preview1, new Action(() =>
+            {
+                var actualWidth = preview1.Width;
+                var actualHeight = preview1.Height;
+                IntPtr surface = IntPtr.Zero;
+
+                if (m_previewCallback != null)
+                {
+                    new MTAAction(() =>
+                    {
+                        m_previewCallback.PreviewHelper.SetSurfaceSize((uint)actualWidth, (uint)actualHeight);
+                        m_previewCallback.PreviewHelper.GetBackBuffer(out surface);
+                    });
+
+                    if (surface != IntPtr.Zero)
+                    {                        
+                        this.Invoke((Action)(() =>
+                        {
+                            Device d3dDevice = new Device(new Direct3D(),
+                                                            0,
+                                                            DeviceType.Hardware,
+                                                            preview1.Handle,
+                                                            CreateFlags.HardwareVertexProcessing,
+                                                            new PresentParameters(preview1.Width, preview1.Height));
+                            Surface backBuffer = d3dDevice.GetBackBuffer(0, 0);
+
+                            new MTAAction(() => m_previewCallback.PreviewHelper.Render());
+
+                            d3dDevice.Present();
+                        }));                        
+                    }
+                }
+            }));
         }
 
         // Cierra las instancias
